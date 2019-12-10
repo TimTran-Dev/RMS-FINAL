@@ -98,8 +98,18 @@ module.exports = function(app, passport, db, mongoose, ObjectId, multer) {
               },
               (err, rating) => {
                 console.log("THIS IS RATING SCHOOL", rating);
+                let total = 0;
+                for (let i = 0; i < reviews.length; i++) {
+                  total += reviews[i].rating;
+                }
+                const average = total
+                  ? Math.floor(total / reviews.length)
+                  : "School has not been reviewed";
+                console.log(total);
+                console.log(average);
                 res.render("School.ejs", {
                   user: req.user,
+                  average: average,
                   reviews: reviews,
                   school: schools[0],
                   schoolName: schoolName,

@@ -76,11 +76,8 @@
 					<div class="row row-mt-15em">
 						<div class="col-md-7 mt-text animate-box" data-animate-effect="fadeInUp">
 							<img class="defaultSchool" src="images/defaultschool.png" alt="">
-							<h1><%= schoolName %></h1>
+							<h1> <%= school.properties.SCH_NAME %></h1>
 						</div>
-						<% if (typeof user !== 'undefined') {  %>
-
-						<% } %>
 						<div class="col-md-4 col-md-push-1 animate-box" data-animate-effect="fadeInRight">
 									<h4 class="position">Address: <%= school["properties"]["ADDRESS"] %></h4>
 									<h4>City: <%= school.properties.CITY %></h4>
@@ -103,15 +100,7 @@
 					<div class="gtco-widget">
 						<% if (user) { %>
 							<form action="/userReview" method="POST">
-								<% let average = 0 %>
-								<% for (var i=0; i<reviews.length; i++) {%>
-									<% average += reviews[i].rating %>
-									<% if(reviews.length === 0){ %>
-										<% reviews[i].length === 5 %>
-								<%	} %>
-									<% } %>
-									<strong class="rating">Overall Rating: (<%= parseInt(average / reviews.length) %>)</strong>
-									<br>
+								<p>Overall Review:  <%= average %></p>
 								<label for="">Pros: </label>
 								<textarea name="pros_review" rows="5" cols="50"></textarea>
 								<label for="">Cons: </label>
@@ -152,10 +141,9 @@
 								<br>
 								<p><strong>Cons: </strong><span class="conThing"><%= reviews[i].cons_review %></span></p>
 								<br>
-								<p class="hide" id="userId"><%= reviews[i].userId %></p>
-								<p class="hide" id="schoolId"><%= reviews[i].schoolId %></p>
+								<p class="hide"><%= reviews[i].userId %></p>
+								<p class="hide"><%= reviews[i].schoolId %></p>
 								<p><%= reviews[i].date %></p>
-								<br>
 								<button class="remove">Delete</button>
 							</li>
 							<% } %>
@@ -176,8 +164,8 @@
 				<div class="col-md-12">
 					<p class="pull-right">
 						<ul class="gtco-social-icons pull-right">
-							<li><a href="https://twitter.com/TimTranDev"><i class="icon-twitter"></i></a></li>
-							<li><a href="https://www.linkedin.com/in/timvtran/"><i class="icon-linkedin"></i></a></li>
+							<li><a href="#"><i class="icon-twitter"></i></a></li>
+							<li><a href="#"><i class="icon-linkedin"></i></a></li>
 						</ul>
 					</p>
 				</div>
