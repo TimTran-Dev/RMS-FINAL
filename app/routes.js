@@ -247,7 +247,7 @@ module.exports = function(app, passport, db, mongoose, ObjectId, multer) {
     "/login",
     passport.authenticate("local-login", {
       successRedirect: "/profile",
-      failureRedirect: "/signUp",
+      failureRedirect: "/",
       failureFlash: true
     })
   );
@@ -267,7 +267,7 @@ module.exports = function(app, passport, db, mongoose, ObjectId, multer) {
     "/signUp",
     passport.authenticate("local-signup", {
       successRedirect: "/profile",
-      failureRedirect: "/signUp",
+      failureRedirect: "/",
       failureFlash: true
     })
   );
