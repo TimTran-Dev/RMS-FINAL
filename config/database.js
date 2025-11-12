@@ -1,6 +1,7 @@
 // config/database.js
+require('dotenv').config();
+
 module.exports = {
-  url:
-    "mongodb+srv://demoday:demo@cluster0-f1pmx.mongodb.net/ratemyschool?retryWrites=true&w=majority", // looks like mongodb://<user>:<pass>@mongo.onmodulus.net:27017/Mikha4ot
-  dbName: "ratemyschool"
+  url: process.env.MONGO_URI,
+  dbName: process.env.DB_NAME || "ratemyschool"
 };

@@ -1,74 +1,55 @@
-var express = require("express");
-var app = express();
-var port = process.env.PORT || 8000;
-const MongoClient = require("mongodb").MongoClient;
-var mongoose = require("mongoose");
-var passport = require("passport");
-var flash = require("connect-flash");
-var ObjectId = require("mongodb").ObjectID;
-var multer = require("multer");
+require('dotenv').config();
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 8000;
+const mongoose = require("mongoose");
+const passport = require("passport");
+const session = require("express-session");
+const flash = require("connect-flash");
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
+const multer = require("multer");
+const ObjectId = require("mongodb").ObjectID;
+const dbConfig = require('./config/database');
 
-var morgan = require("morgan");
-var cookieParser = require("cookie-parser");
-var bodyParser = require("body-parser");
-var session = require("express-session");
-
-var configDB = require("./config/database.js");
-
-var db;
-
-mongoose.connect(configDB.url, { useMongoClient: true }, (err, database) => {
-  if (err) return console.log(err);
-  db = database;
-  require("./app/routes.js")(
-    app,
-    passport,
-    db,
-    mongoose,
-    ObjectId,
-    multer,
-    express,
-    bodyParser
-  );
-}); // connect to our database
-
-//app.listen(port, () => {
-// MongoClient.connect(configDB.url, { useNewUrlParser: true }, (error, client) => {
-//     if(error) {
-//         throw error;
-//     }
-//     db = client.db(configDB.dbName);
-//     console.log("Connected to `" + configDB.dbName + "`!");
-//     require('./app/routes.js')(app, passport, db);
-// });
-//});
-
-require("./config/passport")(passport); // pass passport for configuration
-
-// set up our express application
-app.use(morgan("dev")); // log every request to the console
-app.use(cookieParser()); // read cookies (needed for auth)
-app.use(bodyParser.json()); // get information from html forms
+// Middleware
+app.use(morgan("dev"));
+app.use(cookieParser());
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.set("view engine", "ejs");
 
-//app.set('view engine', 'ejs'); // set up ejs for templating
-app.set('view engine', 'ejs');
-// required for passport
-app.use(
-  session({
-    secret: "resilientbootcamp", // session secret
-    resave: true,
-    saveUninitialized: true
-  })
-);
+// Passport setup
+require("./config/passport")(passport);
+app.use(session({
+  secret: "resilientbootcamp",
+  resave: true,
+  saveUninitialized: true
+}));
 app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
-app.use(flash()); // use connect-flash for flash messages stored in session
+app.use(passport.session());
+app.use(flash());
 
-// routes ======================================================================
-//require('./app/routes.js')(app, passport, db); // load our routes and pass in our app and fully configured passport
+// MongoDB connection
+mongoose.connect(dbConfig.url, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.error("MongoDB connection error:", err));
+const db = mongoose.connection;
 
-// launch ======================================================================
-app.listen(port);
-console.log("You have connected successfully to " + port);
+db.on("error", console.error.bind(console, "MongoDB connection error:"));
+db.once("open", () => {
+  console.log("Connected to MongoDB (Mongoose)");
+
+  // Load routes **after DB is ready**
+  require("./app/routes")(app, passport, db, mongoose, ObjectId, multer);
+
+  // Start server
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+});
