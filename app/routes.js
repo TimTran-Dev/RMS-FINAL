@@ -2,6 +2,9 @@ var Review = require("./models/review");
 
 module.exports = function(app, passport, db, mongoose, ObjectId, multer) {
   app.get("/", function(req, res) {
+    if (req.isAuthenticated()) {
+      return res.redirect("/profile");
+    }
     res.render("index.ejs");
   });
 
@@ -76,49 +79,49 @@ module.exports = function(app, passport, db, mongoose, ObjectId, multer) {
   //School redirecting start
 
   // http://localhost:8000/schools/Boston%20Green%20Academy
-  app.get("/schools/:schoolName", isLoggedIn, function(req, res) {
-    let schoolName = req.params.schoolName;
+  app.get("/schools/:schoolName", isLoggedIn, async (req, res) => {
+    try {
+      const schoolName = req.params.schoolName;
+      console.log("Requested school:", schoolName);
 
-    // console.log(schoolName);
-    db.collection("schools")
-      .find({
-        "properties.SCH_NAME": schoolName
-      })
-      .toArray((err, schools) => {
-        if (err) return console.log(err);
-        db.collection("userReview")
-          .find({
-            schoolId: schools[0]._id
-          })
-          .toArray((reviewErr, reviews) => {
-            if (reviewErr) return console.log(reviewErr);
-            db.collection("userReview").find(
-              {
-                schoolId: schools[0]._id
-              },
-              (err, rating) => {
-                console.log("THIS IS RATING SCHOOL", rating);
-                let total = 0;
-                for (let i = 0; i < reviews.length; i++) {
-                  total += reviews[i].rating;
-                }
-                const average = total
-                  ? Math.floor(total / reviews.length)
-                  : "School has not been reviewed";
-                console.log(total);
-                console.log(average);
-                res.render("School.ejs", {
-                  user: req.user,
-                  average: average,
-                  reviews: reviews,
-                  school: schools[0],
-                  schoolName: schoolName,
-                  rating: rating
-                });
-              }
-            );
-          });
+      // Find the school
+      const schools = await db.collection("schools")
+        .find({ "properties.SCH_NAME": schoolName })
+        .toArray();
+
+      if (!schools || schools.length === 0) {
+        return res.status(404).send("School not found");
+      }
+
+      const school = schools[0];
+
+      // Find reviews for the school
+      const reviews = await db.collection("userReview")
+        .find({ schoolId: school._id })
+        .toArray();
+
+      // Compute average rating
+      let average;
+      if (reviews.length > 0) {
+        const total = reviews.reduce((sum, r) => sum + r.rating, 0);
+        average = Math.floor(total / reviews.length);
+      } else {
+        average = "School has not been reviewed";
+      }
+
+      res.render("School.ejs", {
+        user: req.user,
+        schoolName: schoolName,
+        school: school,
+        reviews: reviews,
+        average: average,
+        // rating: rating
       });
+
+    } catch (err) {
+      console.error("Error fetching school:", err);
+      res.status(500).send("Internal Server Error");
+    }
   });
 
   app.post("/schoolSearch", (req, res) => {
