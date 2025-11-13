@@ -1,6 +1,6 @@
 {
   "name": "RateMySchool",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Rate My School Project",
   "main": "index.js",
   "type": "module",
