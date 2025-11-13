@@ -210,17 +210,18 @@
     });
   };
 
-  window.addEventListener("load", function() {
-    document
-      .querySelector('input[type="file"]')
-      .addEventListener("change", function() {
-        if (this.files && this.files[0]) {
-          var img = document.querySelector("img"); // $('img')[0]
-          img.src = URL.createObjectURL(this.files[0]); // set src to blob url
-          img.onload = imageIsLoaded;
-        }
-      });
-  });
+window.addEventListener("load", function() {
+  const fileInput = document.querySelector('input[type="file"]');
+  const img = document.querySelector("img");
+  if (fileInput && img) {
+    fileInput.addEventListener("change", function() {
+      if (this.files && this.files[0]) {
+        img.src = URL.createObjectURL(this.files[0]); // set src to blob url
+        img.onload = imageIsLoaded;
+      }
+    });
+  }
+});
 
   function imageIsLoaded() {
     //alert(this.src); blob url
@@ -309,11 +310,16 @@
 // Additional edits for event listeners
 
 const redirectForm = document.querySelector("#leonRocks");
-redirectForm.addEventListener("submit", e => {
-  e.preventDefault();
-  let school = document.querySelector("#fullname").value;
-  window.location = "schools/" + school;
-});
+if (redirectForm) {
+  redirectForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const schoolInput = document.querySelector("#fullname");
+    const school = schoolInput ? schoolInput.value : "";
+    if (school) {
+      window.location.href = "schools/" + encodeURIComponent(school);
+    }
+  });
+}
 
 // const name = this.parentNode.childNodes[1].innerText;
 // const school = this.parentNode.childNodes[3].innerText;

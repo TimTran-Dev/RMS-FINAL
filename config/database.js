@@ -1,7 +1,5 @@
 // config/database.js
-require('dotenv').config();
+import 'dotenv/config';
 
-module.exports = {
-  url: process.env.MONGO_URI,
-  dbName: process.env.DB_NAME || "ratemyschool"
-};
+export const url = process.env.MONGO_URI;
+export const dbName = process.env.DB_NAME || "ratemyschool";

@@ -1,6 +1,8 @@
-var Review = require("./models/review");
+import Review from "./models/review.js";
+import mongodbPkg from "mongodb";
+const { ObjectId } = mongodbPkg;
 
-module.exports = function(app, passport, db, mongoose, ObjectId, multer) {
+export default function(app, passport, db, mongoose, ObjectId, multer) {
   app.get("/", function(req, res) {
     if (req.isAuthenticated()) {
       return res.redirect("/profile");

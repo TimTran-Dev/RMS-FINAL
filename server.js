@@ -1,17 +1,20 @@
-require('dotenv').config();
-const express = require("express");
+import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
+import mongoose from "mongoose";
+import passport from "passport";
+import session from "express-session";
+import flash from "connect-flash";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
+import multer from "multer";
+import pkg from "mongodb";
+const { ObjectID: ObjectId } = pkg;
+import {url, dbName} from "./config/database.js";
+
 const app = express();
 const port = process.env.PORT || 8000;
-const mongoose = require("mongoose");
-const passport = require("passport");
-const session = require("express-session");
-const flash = require("connect-flash");
-const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
-const bodyParser = require("body-parser");
-const multer = require("multer");
-const ObjectId = require("mongodb").ObjectID;
-const dbConfig = require('./config/database');
 
 // Middleware
 app.use(morgan("dev"));
@@ -21,35 +24,45 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 
-// Passport setup
-require("./config/passport")(passport);
-app.use(session({
-  secret: "resilientbootcamp",
-  resave: true,
-  saveUninitialized: true
-}));
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(flash());
+// Main async setup
+const startServer = async () => {
+  const passportConfig = await import("./config/passport.js");
+  passportConfig.default(passport);
 
-// MongoDB connection
-mongoose.connect(dbConfig.url, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.error("MongoDB connection error:", err));
-const db = mongoose.connection;
+  app.use(
+    session({
+      secret: "resilientbootcamp",
+      resave: true,
+      saveUninitialized: true,
+    })
+  );
+  app.use(passport.initialize());
+  app.use(passport.session());
+  app.use(flash());
 
-db.on("error", console.error.bind(console, "MongoDB connection error:"));
-db.once("open", () => {
+  // MongoDB connection
+  try {
+    await mongoose.connect(url, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("MongoDB connected");
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  }
+
+  const db = mongoose.connection;
+  db.on("error", console.error.bind(console, "MongoDB connection error:"));
+
   console.log("Connected to MongoDB (Mongoose)");
 
-  // Load routes **after DB is ready**
-  require("./app/routes")(app, passport, db, mongoose, ObjectId, multer);
+  const routesModule = await import("./app/routes.js");
+  routesModule.default(app, passport, db, mongoose, ObjectId, multer);
 
-  // Start server
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
   });
-});
+};
+
+startServer();

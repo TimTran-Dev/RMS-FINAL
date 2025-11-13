@@ -1,10 +1,8 @@
-// load the things we need
-var mongoose = require("mongoose");
-var bcrypt = require("bcrypt-nodejs");
-var Schema = mongoose.Schema;
+import mongoose from "mongoose";
 
-// define the schema for our user model
-var reviewSchema = Schema({
+const { Schema } = mongoose;
+
+const reviewSchema = new Schema({
   reviewerEmail: { type: String, required: true },
   pros_review: { type: String, required: true },
   cons_review: { type: String, required: true },
@@ -14,5 +12,4 @@ var reviewSchema = Schema({
   schoolId: { type: Schema.Types.ObjectId }
 });
 
-// create the model for users and expose it to our app
-module.exports = mongoose.model("Review", reviewSchema);
+export default mongoose.model("Review", reviewSchema);
