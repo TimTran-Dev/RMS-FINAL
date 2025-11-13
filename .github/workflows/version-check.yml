@@ -1,10 +1,11 @@
 name: Version Check
 
 on:
-  pull_request:
+  pull_request_target:
     paths:
       - 'package.json'
       - 'version.json'
+      - '.github/workflows/version-check.yml'
   push:
     branches:
       - main
@@ -26,7 +27,7 @@ jobs:
       - name: Get current version
         id: current-version
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
+          if [ "${{ github.event_name }}" == "pull_request_target" ]; then
             # PR version
             VERSION=$(jq -r .version package.json)
             echo "PR version: $VERSION"
